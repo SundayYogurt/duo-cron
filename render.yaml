@@ -1,0 +1,37 @@
+services:
+  - type: keyvalue
+    name: apple-duo-state
+    plan: 256mb
+    region: singapore
+    ipAllowList: []
+    maxmemoryPolicy: noeviction
+    persistenceMode: journal-snapshot
+
+  - type: cron
+    name: apple-duo-discord-check
+    runtime: node
+    plan: 0.5c-512mb
+    region: singapore
+    schedule: '* * * * *'
+    buildCommand: npm ci
+    startCommand: npm run check
+    envVars:
+      - key: DISCORD_BOT_TOKEN
+        sync: false
+      - key: DISCORD_CHANNEL_ID
+        sync: false
+      - key: DISCORD_PRO_MAX_CHANNEL_ID
+        value: '1561969840204283965'
+      - key: APPLE_POSTAL_CODE
+        value: '10330'
+      - key: DAILY_STATUS_HOUR
+        value: '12'
+      - key: DAILY_STATUS_ENABLED
+        value: 'false'
+      - key: SEND_TEST_ON_FIRST_RUN
+        value: 'false'
+      - key: REDIS_URL
+        fromService:
+          type: keyvalue
+          name: apple-duo-state
+          property: connectionString

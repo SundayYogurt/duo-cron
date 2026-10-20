@@ -1,0 +1,50 @@
+name: Check iPhone Duo shipping date
+
+on:
+  workflow_dispatch:
+    inputs:
+      send_test:
+        description: Send a test message to Discord
+        type: boolean
+        default: true
+
+permissions:
+  contents: write
+
+concurrency:
+  group: apple-duo-stock-check
+  cancel-in-progress: false
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: true
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - run: npm ci
+      - name: Send test message on manual run
+        if: github.event_name == 'workflow_dispatch' && inputs.send_test
+        env:
+          DISCORD_BOT_TOKEN: ${{ secrets.DISCORD_BOT_TOKEN }}
+          DISCORD_CHANNEL_ID: ${{ secrets.DISCORD_CHANNEL_ID }}
+          APPLE_POSTAL_CODE: ${{ vars.APPLE_POSTAL_CODE || '10330' }}
+        run: node src/index.mjs --test-discord
+      - name: Check Apple and send Discord alert
+        env:
+          DISCORD_BOT_TOKEN: ${{ secrets.DISCORD_BOT_TOKEN }}
+          DISCORD_CHANNEL_ID: ${{ secrets.DISCORD_CHANNEL_ID }}
+          APPLE_POSTAL_CODE: ${{ vars.APPLE_POSTAL_CODE || '10330' }}
+        run: node src/index.mjs --once
+      - name: Save last observed shipping dates
+        run: |
+          if [ -n "$(git status --porcelain -- .stock-state.json)" ]; then
+            git config user.name "github-actions[bot]"
+            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+            git add .stock-state.json
+            git commit -m "Update observed iPhone Duo shipping dates"
+            git push
+          fi

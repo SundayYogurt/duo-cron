@@ -1,0 +1,16 @@
+{
+  "name": "apple-duo-discord-bot",
+  "private": true,
+  "type": "module",
+  "dependencies": {
+    "redis": "6.3.0"
+  },
+  "scripts": {
+    "check": "node src/index.mjs --once",
+    "start": "node --env-file=.env src/index.mjs",
+    "test": "node --test"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}
