@@ -7,7 +7,7 @@
   },
   "scripts": {
     "check": "node src/index.mjs --once",
-    "start": "node --env-file=.env src/index.mjs",
+    "start": "node src/index.mjs",
     "test": "node --test"
   },
   "engines": {
